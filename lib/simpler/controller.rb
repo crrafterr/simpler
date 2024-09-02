@@ -2,7 +2,6 @@ require_relative 'view'
 
 module Simpler
   class Controller
-
     attr_reader :name, :request, :response
 
     def initialize(env)
@@ -43,12 +42,27 @@ module Simpler
     end
 
     def params
+      add_id_params
       @request.params
     end
 
-    def render(template)
-      @request.env['simpler.template'] = template
+    def add_id_params
+      path_parts = @request.env['REQUEST_PATH'].split('/')
+
+      @request.params[:id] = path_parts.last if path_parts.last[/^\d+$/]
     end
 
+    def render(template, template_format = { text: :html })
+      @request.env['simpler.template'] = template
+      @request.env['simpler.template_format'] = template_format
+    end
+
+    def status(code)
+      @response.status = code
+    end
+
+    def headers
+      @response.headers
+    end
   end
 end
